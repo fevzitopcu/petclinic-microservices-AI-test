@@ -1,0 +1,218 @@
+
+services:
+  config-server:
+    image: petclinic-config-server:dev
+    container_name: config-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-I", "http://config-server:8888"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 8888:8888
+    networks:
+      - petclinic-network
+
+  discovery-server:
+    image: petclinic-discovery-server:dev
+    container_name: discovery-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://discovery-server:8761"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+      - 8761:8761
+    networks:
+      - petclinic-network
+
+  customers-service:
+    image: petclinic-customers-service:dev
+    container_name: customers-service
+    restart: on-failure
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,mysql
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      mysqlserver:
+        condition: service_healthy
+    ports:
+      - 8081:8081
+    networks:
+      - petclinic-network
+
+  visits-service:
+    image: petclinic-visits-service:dev
+    container_name: visits-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,mysql
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      mysqlserver:
+        condition: service_healthy
+    ports:
+      - 8082:8082
+    networks:
+      - petclinic-network
+
+  vets-service:
+    image: petclinic-vets-service:dev
+    container_name: vets-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,mysql
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      mysqlserver:
+        condition: service_healthy
+    ports:
+      - 8083:8083
+    networks:
+      - petclinic-network
+
+  genai-service:
+    image: petclinic-genai-service:dev
+    container_name: genai-service
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_KEY=${AZURE_OPENAI_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - 8084:8084
+    networks:
+      - petclinic-network
+
+  api-gateway:
+    image: petclinic-api-gateway:dev
+    container_name: api-gateway
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - 8060:8080
+    networks:
+      - petclinic-network
+
+  tracing-server:
+    image: openzipkin/zipkin
+    container_name: tracing-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    ports:
+      - 9411:9411
+    networks:
+      - petclinic-network
+
+  admin-server:
+    image: petclinic-admin-server:dev
+    container_name: admin-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - 9090:9090
+    networks:
+      - petclinic-network
+
+   ## Grafana / Prometheus
+
+  grafana-server:
+    image: petclinic-grafana-server:dev
+    container_name: grafana-server
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - 3000:3000
+    networks:
+      - petclinic-network
+
+  prometheus-server:
+    image: petclinic-prometheus-server:dev
+    container_name: prometheus-server
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - 9091:9090
+    networks:
+      - petclinic-network
+
+# mysql database
+
+  mysqlserver:
+    image: mysql:8.4.5
+    container_name: mysqlserver
+    environment:
+      MYSQL_ROOT_PASSWORD: petclinic
+      MYSQL_DATABASE: petclinic
+    ports:
+      - 3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - petclinic-network
+
+networks:
+  petclinic-network:
+    driver: bridge
+
