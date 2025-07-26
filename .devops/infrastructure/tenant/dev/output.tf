@@ -1,14 +1,11 @@
-output "master_ip" {
+output "master_public_ip" {
   value = module.master.public_ip
-  sensitive   = false
 }
 
-output "worker_1_ip" {
+output "worker1_public_ip" {
   value = module.worker_1.public_ip
-  sensitive   = false
 }
 
-output "worker_2_ip" {
+output "worker2_public_ip" {
   value = module.worker_2.public_ip
-  sensitive   = false
 }
