@@ -1,29 +1,39 @@
+# Default VPC'yi ve ilk subnetini al
+data "aws_vpc" "default" {
+  default = true
+}
 
+data "aws_subnet_ids" "default_subnets" {
+  vpc_id = data.aws_vpc.default.id
+}
+
+data "aws_subnet" "default_subnet" {
+  id = data.aws_subnet_ids.default_subnets.ids[0]
+}
+
+# EC2 instance
 resource "aws_instance" "this" {
   ami                         = var.ami
   instance_type               = var.instance_type
-  subnet_id                   = var.subnet_id
+  subnet_id                   = data.aws_subnet.default_subnet.id
   associate_public_ip_address = true
   key_name                    = var.key_name
-  user_data                   = (var.user_data) != null ? var.user_data : null
+  user_data                   = (var.user_data != null ? var.user_data : null)
   iam_instance_profile        = aws_iam_instance_profile.this.name
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
 
   root_block_device {
-    volume_size = 100         # Örneğin 30 GiB
-    volume_type = "gp3"      # gp2, gp3, io1, vs.
+    volume_size           = 100
+    volume_type           = "gp3"
     delete_on_termination = true
   }
-
-
-
 
   tags = {
     Name = "${var.name}-ec2"
   }
 }
 
-
+# IAM Role & Profile
 resource "aws_iam_role" "ec2_instance_role" {
   name = "${var.name}-ec2-role"
 
@@ -41,7 +51,7 @@ resource "aws_iam_role" "ec2_instance_role" {
 
 resource "aws_iam_role_policy_attachment" "ec2_attach_policy" {
   role       = aws_iam_role.ec2_instance_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess" # veya ihtiyacına göre AmazonSSMFullAccess, AmazonS3ReadOnlyAccess
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_instance_profile" "this" {
@@ -49,13 +59,15 @@ resource "aws_iam_instance_profile" "this" {
   role = aws_iam_role.ec2_instance_role.name
 }
 
-
+# Security Group
 resource "aws_security_group" "ec2_sg" {
-  vpc_id = var.vpc_id
   name   = "${var.name}-sg"
+  vpc_id = data.aws_vpc.default.id
+
   tags = {
     Name = "${var.name}-sg"
   }
+
   dynamic "ingress" {
     for_each = var.ports
     iterator = port
@@ -69,9 +81,8 @@ resource "aws_security_group" "ec2_sg" {
 
   egress {
     from_port   = 0
-    protocol    = "-1"
     to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
 }

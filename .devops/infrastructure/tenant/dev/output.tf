@@ -1,11 +1,14 @@
-output "ec2_public_dns" {
-  value = module.ec2.public_DNSName
+output "master_ip" {
+  value = module.master.public_ip
+  sensitive   = false
 }
 
-output "ssh_to_ec2" {
-  value = "ssh -i devops-keypem-ft.pem ec2-user@${module.ec2.public_DNSName}"
+output "worker_1_ip" {
+  value = module.worker_1.public_ip
+  sensitive   = false
 }
 
-output "jenkins_password_command" {
-  value = "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+output "worker_2_ip" {
+  value = module.worker_2.public_ip
+  sensitive   = false
 }

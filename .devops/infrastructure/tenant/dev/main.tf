@@ -1,20 +1,53 @@
 
-module "vpc" {
-  source              = "../../modules/vpc"
-  name                = "capstone"
-  vpc_cidr            = "10.0.0.0/16"
-  public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
-  azs                 = ["eu-west-1a", "eu-west-1b"]
-}
-
-module "ec2" {
+module "master" {
   source        = "../../modules/ec2"
-  name          = "capstone-development-server"
+  name          = "capstone-k8s-master"
   ami           = "ami-0ca351c241d836d3b"    #"ami-03d8b47244d950bbb"
   instance_type = "t3a.medium"
-  subnet_id     = module.vpc.public_subnet_ids[0]
-  vpc_id        = module.vpc.vpc_id
   key_name      = "devops-keypem-ft"
-  user_data     = file("${path.module}/scripts/jenkins_user_data.sh")
-  ports = [22, 80, 8080, 9090, 8081, 8082, 8083, 8888, 9411, 7979, 3000, 9091, 8761, 8060]
+  user_data     = null # file("${path.module}/scripts/jenkins_user_data.sh")
+  # Master node için gerekli portlar
+  ports = [
+    22,     # SSH
+    6443,   # Kubernetes API server
+    2379,   # etcd client communication
+    2380,   # etcd peer communication
+    10250,  # Kubelet API
+    10251,  # kube-scheduler
+    10252   # kube-controller-manager
+  ]
+}
+
+module "worker_1" {
+  source        = "../../modules/ec2"
+  name          = "capstone-k8s-worker-1"
+  ami           = "ami-0ca351c241d836d3b"    #"ami-03d8b47244d950bbb"
+  instance_type = "t3a.medium"
+  key_name      = "devops-keypem-ft"
+  user_data     = null # file("${path.module}/scripts/jenkins_user_data.sh")
+  # Worker node için gerekli portlar
+  ports = [
+    22,     # SSH
+    10250,  # Kubelet API
+    30000,  # NodePort servisleri (aralık olarak açılabilir)
+    32767,  # Son nodePort
+    8472    # Calico VXLAN (opsiyonel, network plugin'e bağlı)
+  ]
+}
+
+module "worker_2" {
+  source        = "../../modules/ec2"
+  name          = "capstone-k8s-worker-2"
+  ami           = "ami-0ca351c241d836d3b"    #"ami-03d8b47244d950bbb"
+  instance_type = "t3a.medium"
+  key_name      = "devops-keypem-ft"
+  user_data     = null # file("${path.module}/scripts/jenkins_user_data.sh")
+  # Worker node için gerekli portlar
+  ports = [
+    22,     # SSH
+    10250,  # Kubelet API
+    30000,  # NodePort servisleri (aralık olarak açılabilir)
+    32767,  # Son nodePort
+    8472    # Calico VXLAN (opsiyonel, network plugin'e bağlı)
+  ]
 }
