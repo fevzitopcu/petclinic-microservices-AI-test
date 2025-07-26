@@ -8,3 +8,4 @@ aws ecr create-repository \
 --image-scanning-configuration scanOnPush=false \
 --image-tag-mutability MUTABLE \
 --region ${AWS_REGION}
+
