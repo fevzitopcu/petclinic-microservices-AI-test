@@ -6,3 +6,9 @@ variable "name" {}
 variable "user_data" {}
 variable "vpc_id" {}
 variable "ports" {}
+
+variable "NodeName" {}
+variable "Project" {}
+variable "NodeRole" {}
+variable "environment" {}
+variable "NodeId" {}

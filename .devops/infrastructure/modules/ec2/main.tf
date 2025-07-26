@@ -15,11 +15,13 @@ resource "aws_instance" "this" {
     delete_on_termination = true
   }
 
-
-
-
   tags = {
     Name = "${var.name}-ec2"
+    name = var.NodeName
+    Project= var.Project
+    Role= var.NodeRole
+    Id= var.NodeId
+    environment= var.environment
   }
 }
 

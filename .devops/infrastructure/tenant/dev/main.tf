@@ -28,6 +28,14 @@ module "master" {
     10251,  # kube-scheduler
     10252   # kube-controller-manager
   ]
+
+      tags = {
+        NodeName = "kube-master"
+        Project = "tera-kube-ans"
+        NodeRole = "master"
+        NodeId = "1"
+        environment = "dev"
+    }
 }
 
 module "worker_1" {
@@ -47,6 +55,14 @@ module "worker_1" {
     32767,  # Son nodePort
     8472    # Calico VXLAN (opsiyonel, network plugin'e bağlı)
   ]
+      tags = {
+        NodeName = "worker-1"
+        Project = "tera-kube-ans"
+        NodeRole = "worker"
+        NodeId = "1"
+        environment = "dev"
+    }
+
 }
 
 module "worker_2" {
@@ -66,4 +82,11 @@ module "worker_2" {
     32767,  # Son nodePort
     8472    # Calico VXLAN (opsiyonel, network plugin'e bağlı)
   ]
+      tags = {
+        NodeName = "worker-2"
+        Project = "tera-kube-ans"
+        NodeRole = "worker"
+        NodeId = "2"
+        environment = "dev"
+    }
 }
