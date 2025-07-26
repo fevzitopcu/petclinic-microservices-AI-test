@@ -4,6 +4,8 @@ module "master" {
   name          = "capstone-k8s-master"
   ami           = "ami-0ca351c241d836d3b"    #"ami-03d8b47244d950bbb"
   instance_type = "t3a.medium"
+  vpc_id     = data.aws_vpc.default.id
+  subnet_id  = data.aws_subnet_ids.default_subnets.ids[0]
   key_name      = "devops-keypem-ft"
   user_data     = null # file("${path.module}/scripts/jenkins_user_data.sh")
   # Master node için gerekli portlar
@@ -22,6 +24,8 @@ module "worker_1" {
   source        = "../../modules/ec2"
   name          = "capstone-k8s-worker-1"
   ami           = "ami-0ca351c241d836d3b"    #"ami-03d8b47244d950bbb"
+  vpc_id     = data.aws_vpc.default.id
+  subnet_id  = data.aws_subnet_ids.default_subnets.ids[0]
   instance_type = "t3a.medium"
   key_name      = "devops-keypem-ft"
   user_data     = null # file("${path.module}/scripts/jenkins_user_data.sh")
@@ -38,6 +42,8 @@ module "worker_1" {
 module "worker_2" {
   source        = "../../modules/ec2"
   name          = "capstone-k8s-worker-2"
+  vpc_id     = data.aws_vpc.default.id
+  subnet_id  = data.aws_subnet_ids.default_subnets.ids[0]
   ami           = "ami-0ca351c241d836d3b"    #"ami-03d8b47244d950bbb"
   instance_type = "t3a.medium"
   key_name      = "devops-keypem-ft"
