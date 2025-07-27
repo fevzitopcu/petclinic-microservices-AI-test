@@ -1,5 +1,6 @@
 
 
+
 #------------------------------------------------------
 
 # module "vpc" {
@@ -15,8 +16,8 @@ module "master" {
   name          = "k8s-master-node"
   ami           = "ami-020cba7c55df1f615" # us-east-1 Canonical, Ubuntu, 24.04, amd64 noble image
   instance_type = "t3a.medium"
-  subnet_id     = "subnet-0f08e1bdbdebc6448"
-  vpc_id        = "vpc-0bfb33cf0328fc24b"
+  subnet_id     = module.vpc.public_subnet_ids[0]
+  vpc_id        = module.vpc.vpc_id
   key_name      = "devops-keypem-va"
   user_data     = file("${path.module}/scripts/user_data.sh")
 
@@ -42,8 +43,8 @@ module "worker_1" {
   name          = "k8s-worker1-node"
   ami           = "ami-020cba7c55df1f615" # us-east-1 Canonical, Ubuntu, 24.04, amd64 noble image
   instance_type = "t3a.medium"
-  subnet_id     = "subnet-0f08e1bdbdebc6448"
-  vpc_id        = "vpc-0bfb33cf0328fc24b"
+  subnet_id     = module.vpc.public_subnet_ids[1]
+  vpc_id        = module.vpc.vpc_id
   key_name      = "devops-keypem-va"
   user_data     = file("${path.module}/scripts/user_data.sh")
   
@@ -68,8 +69,8 @@ module "worker_2" {
   name          = "k8s-worker2-node"
   ami           = "ami-020cba7c55df1f615" # us-east-1 Canonical, Ubuntu, 24.04, amd64 noble image
   instance_type = "t3a.medium"
-  subnet_id     = "subnet-0f08e1bdbdebc6448"
-  vpc_id        = "vpc-0bfb33cf0328fc24b"
+  subnet_id     = module.vpc.public_subnet_ids[2]
+  vpc_id        = module.vpc.vpc_id
   key_name      = "devops-keypem-va"
   user_data     = file("${path.module}/scripts/user_data.sh")
 
@@ -88,3 +89,4 @@ module "worker_2" {
     8472    # Calico VXLAN (opsiyonel, network plugin'e bağlı)
   ]
 }
+
